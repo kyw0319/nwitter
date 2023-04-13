@@ -1,26 +1,12 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { initializeApp } from 'firebase/app';
-import Routing from './Routing';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import Routing from 'components/Routing';
+import { authService } from 'fbase'; //fbase는 내가 만든 파일이름.
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_apiKey,
-  authDomain: process.env.REACT_APP_authDomain,
-  projectId: process.env.REACT_APP_projectId,
-  storageBucket: process.env.REACT_APP_storageBucket,
-  messagingSenderId: process.env.REACT_APP_messagingSenderId,
-  appId: process.env.REACT_APP_appId,
-  measurementId: process.env.REACT_APP_measurementId,
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 function App() {
-  return <Routing />;
+  const [isLoggedIn, setIsLoggedIn] = useState(authService.currentUser);
+  return <Routing isLoggedIn={isLoggedIn} />;
 }
 
 export default App;
