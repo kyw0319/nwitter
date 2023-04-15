@@ -12,8 +12,9 @@ function Home(props) {
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
   function onLogOutClick() {
-    auth.signOut();
-    setIsLoggedIn(auth.currentUser);
+    auth.signOut().then(() => {
+      setIsLoggedIn(auth.currentUser);
+    });
     console.log('로그아웃.');
   }
   return (
