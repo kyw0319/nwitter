@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
-import bootstrap from 'bootstrap';
+import { Button } from 'react-bootstrap';
 
 function Profile() {
   return <span>Profile</span>;
