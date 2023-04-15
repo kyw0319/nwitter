@@ -10,9 +10,11 @@ function Profile() {
 
 function Home(props) {
   const auth = props.auth;
-  const isLoggedIn = props.isLoggedIn;
+  const setIsLoggedIn = props.setIsLoggedIn;
   function onLogOutClick() {
     auth.signOut();
+    setIsLoggedIn(auth.currentUser);
+    console.log('로그아웃.');
   }
   return (
     <>
@@ -86,7 +88,7 @@ function Routing(props) {
         ) : (
           <Route
             path="/"
-            element={<Home auth={auth} isLoggedIn={isLoggedIn} />}
+            element={<Home auth={auth} setIsLoggedIn={setIsLoggedIn} />}
           />
         )}
       </Routes>
