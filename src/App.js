@@ -40,6 +40,7 @@ function Auth(props) {
         console.log(token);
         const user = result.user; //혹시모르니 유저 정보도 미리 참조시킴.
         //...
+        setIsLoggedIn(auth.currentUser);
       })
       .catch((error) => {
         // 에러 핸들링
