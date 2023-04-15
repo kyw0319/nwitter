@@ -9,10 +9,16 @@ function Profile() {
 }
 
 function Home(props) {
+  const auth = props.auth;
   const isLoggedIn = props.isLoggedIn;
-  console.log('Home 컴포넌트에서 로깅');
-  console.log(isLoggedIn);
-  return <span>Home</span>;
+  function onLogOutClick() {
+    auth.signOut();
+  }
+  return (
+    <>
+      <button onClick={onLogOutClick}>Log Out</button>
+    </>
+  );
 }
 
 function Editprofile() {
@@ -78,7 +84,10 @@ function Routing(props) {
             element={<Auth auth={auth} setIsLoggedIn={setIsLoggedIn} />}
           />
         ) : (
-          <Route path="/" element={<Home isLoggedIn={isLoggedIn} />} />
+          <Route
+            path="/"
+            element={<Home auth={auth} isLoggedIn={isLoggedIn} />}
+          />
         )}
       </Routes>
     </Router>
