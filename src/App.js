@@ -9,8 +9,8 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from 'firebase/auth';
-import { getFirestore, collection, addDoc } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
-import { Button } from 'react-bootstrap';
+import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
+import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
 function Profile() {
   return <span>Profile</span>;
@@ -22,11 +22,20 @@ function Home(props) {
   //로그아웃 부분 시작
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
+  const [nweet, setNweet] = useState('');
+  const [nweets, setNweets] = useState([]);
+  async function getNweets() {
+    const dbNweets = await getDocs(collection(db, 'Nweets'));
+    console.log('dbNweets!!!!!!!!');
+    dbNweets.forEach((doc) => {
+      console.log(doc.data());
+    });
+  }
   useEffect(() => {
     console.log('라우팅 통과한 auth.currentUser 값');
     console.log(auth.currentUser);
+    getNweets(); // nweets을 가져오는 코드 작성하기!!!!!!!!!!!!!!!!!!!!!!
   }, []);
-  const [nweet, setNweet] = useState('');
   function onLogOutClick() {
     auth.signOut().then(() => {
       setIsLoggedIn(null);
@@ -36,10 +45,14 @@ function Home(props) {
   //로그아웃 부분 끝
   async function onSubmit(event) {
     event.preventDefault(); // 트윗 서밋!!!!!!!!!!!!!!!!!!!!!!!
-    const docRef = await addDoc(collection(db, 'Nweets'), {
-      nweet,
-      createdAt: Date.now(),
-    });
+    try {
+      const docRef = await addDoc(collection(db, 'Nweets'), {
+        nweet: nweet,
+        createdAt: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error adding document: ', error); //에러 핸들링!
+    }
     setNweet('');
   }
   function onChange(event) {
