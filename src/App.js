@@ -34,6 +34,8 @@ function Home(props) {
     setNweet(event.target.value);
     console.log(nweet);
   }
+  console.log('라우팅 통과한 auth.currentUser 값');
+  console.log(auth.currentUser);
   return (
     <>
       <button onClick={onLogOutClick}>Log Out</button>
@@ -141,12 +143,21 @@ function App() {
     messagingSenderId: '197322686315',
     appId: '1:197322686315:web:8ae865d88d7da1d6dfd62e',
   };
-
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const [isLoggedIn, setIsLoggedIn] = useState(auth.currentUser);
-  console.log('새로고침하고 state초기화 한 후 auth.currentUser 값');
+  useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        setIsLoggedIn(auth.currentUser);
+      }
+    });
+  }, []);
+
+  console.log(
+    '새로고침하고 state를 auth.currentUser로 초기화 함. 초기화에 쓰인 auth.currentUser 값'
+  );
   console.log(auth.currentUser);
 
   return (
