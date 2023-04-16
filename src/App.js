@@ -9,6 +9,7 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from 'firebase/auth';
+import { getFirestore, collection, addDoc } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap';
 
 function Profile() {
@@ -16,9 +17,16 @@ function Profile() {
 }
 
 function Home(props) {
+  const initializedApp = props.initializedApp;
+  const db = getFirestore(initializedApp);
   //로그아웃 부분 시작
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
+  useEffect(() => {
+    console.log('라우팅 통과한 auth.currentUser 값');
+    console.log(auth.currentUser);
+  }, []);
+  const [nweet, setNweet] = useState('');
   function onLogOutClick() {
     auth.signOut().then(() => {
       setIsLoggedIn(null);
@@ -26,16 +34,18 @@ function Home(props) {
     console.log('로그아웃.');
   }
   //로그아웃 부분 끝
-  const [nweet, setNweet] = useState(''); //컴포넌트 상단으로 빼야되나?
-  function onSubmit(event) {
-    event.preventDefault();
+  async function onSubmit(event) {
+    event.preventDefault(); // 트윗 서밋!!!!!!!!!!!!!!!!!!!!!!!
+    const docRef = await addDoc(collection(db, 'Nweets'), {
+      nweet,
+      createdAt: Date.now(),
+    });
+    setNweet('');
   }
   function onChange(event) {
     setNweet(event.target.value);
     console.log(nweet);
   }
-  console.log('라우팅 통과한 auth.currentUser 값');
-  console.log(auth.currentUser);
   return (
     <>
       <button onClick={onLogOutClick}>Log Out</button>
@@ -111,6 +121,7 @@ function Auth(props) {
 }
 
 function Routing(props) {
+  const initializedApp = props.initializedApp;
   const auth = props.auth;
   const isLoggedIn = props.isLoggedIn;
   const setIsLoggedIn = props.setIsLoggedIn;
@@ -125,7 +136,13 @@ function Routing(props) {
         ) : (
           <Route
             path="/"
-            element={<Home auth={auth} setIsLoggedIn={setIsLoggedIn} />}
+            element={
+              <Home
+                initializedApp={initializedApp}
+                auth={auth}
+                setIsLoggedIn={setIsLoggedIn}
+              />
+            }
           />
         )}
       </Routes>
@@ -162,6 +179,7 @@ function App() {
 
   return (
     <Routing
+      initializedApp={app}
       auth={auth}
       isLoggedIn={isLoggedIn}
       setIsLoggedIn={setIsLoggedIn}
