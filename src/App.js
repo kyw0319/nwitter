@@ -1,7 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
-import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserSessionPersistence,
+} from 'firebase/auth';
 import { Button } from 'react-bootstrap';
 
 function Profile() {
@@ -9,6 +16,7 @@ function Profile() {
 }
 
 function Home(props) {
+  //로그아웃 부분 시작
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
   function onLogOutClick() {
@@ -17,9 +25,29 @@ function Home(props) {
     });
     console.log('로그아웃.');
   }
+  //로그아웃 부분 끝
+  const [nweet, setNweet] = useState(''); //컴포넌트 상단으로 빼야되나?
+  function onSubmit(event) {
+    event.preventDefault();
+  }
+  function onChange(event) {
+    setNweet(event.target.value);
+    console.log(nweet);
+  }
   return (
     <>
       <button onClick={onLogOutClick}>Log Out</button>
+      <form onSubmit={onSubmit}>
+        <input
+          name="tweet"
+          type="text"
+          placeholder="What's on your mind?"
+          value={nweet}
+          onChange={onChange}
+          maxLength={120}
+        />
+        <input type="submit" value="Nweet" />
+      </form>
     </>
   );
 }
@@ -36,9 +64,15 @@ function Auth(props) {
   // Google이 제공하는 Provider 개체를 생성합니다. (공식문서 : Google 제공업체 객체의 인스턴스를 생성합니다.)
 
   function onGoogleClick() {
-    //외부 제공업체로 로그인 시작.
-    signInWithPopup(auth, provider)
+    // 인증상태 지속성 설정하고 바로 팝업으로 로그인 시작.
+    console.log('인증상태 지속성 설정하기 직전 auth.currentUser 값.');
+    console.log(auth.currentUser);
+    setPersistence(auth, browserSessionPersistence)
+      .then(() => {
+        return signInWithPopup(auth, provider);
+      })
       .then((result) => {
+        //외부 제공업체로 로그인 시작.
         console.log('----리다이렉트로 로그인하기 결과 받음----');
         console.log(result);
         // getRedirectResult(auth) 로 얻은 result에 있는 필요한 속성들을 참조.
@@ -49,7 +83,7 @@ function Auth(props) {
         console.log('----token----');
         console.log(token);
         const user = result.user; //혹시모르니 유저 정보도 미리 참조시킴.
-        //...
+        //상태 변경해서 리렌더링 유도.
         setIsLoggedIn(auth.currentUser);
       })
       .catch((error) => {
@@ -111,8 +145,19 @@ function App() {
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-
-  const [isLoggedIn, setIsLoggedIn] = useState(auth.currentUser);
+  useEffect(() => {
+    const [isLoggedIn, setIsLoggedIn] = useState(auth.currentUser);
+  }, []);
+  onAuthStateChanged(auth, (user) => {
+    //현재 로그인했다면..
+    if (user) {
+      setIsLoggedIn(auth.currentUser);
+    } else {
+      setIsLoggedIn(null);
+    }
+  });
+  console.log('새로고침하고 state초기화 한 후 auth.currentUser 값');
+  console.log(auth.currentUser);
 
   return (
     <Routing
