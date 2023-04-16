@@ -21,7 +21,7 @@ function Home(props) {
   const setIsLoggedIn = props.setIsLoggedIn;
   function onLogOutClick() {
     auth.signOut().then(() => {
-      setIsLoggedIn(auth.currentUser);
+      setIsLoggedIn(null);
     });
     console.log('로그아웃.');
   }
@@ -145,17 +145,7 @@ function App() {
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  useEffect(() => {
-    const [isLoggedIn, setIsLoggedIn] = useState(auth.currentUser);
-  }, []);
-  onAuthStateChanged(auth, (user) => {
-    //현재 로그인했다면..
-    if (user) {
-      setIsLoggedIn(auth.currentUser);
-    } else {
-      setIsLoggedIn(null);
-    }
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(auth.currentUser);
   console.log('새로고침하고 state초기화 한 후 auth.currentUser 값');
   console.log(auth.currentUser);
 
