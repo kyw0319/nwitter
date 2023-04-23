@@ -28,13 +28,17 @@ function Home(props) {
     const dbNweets = await getDocs(collection(db, 'Nweets'));
     console.log('dbNweets!!!!!!!!');
     dbNweets.forEach((doc) => {
-      console.log(doc.data());
+      const forCopy = {
+        ...doc.data(),
+        id: document.id,
+      };
+      setNweets((prev) => [...prev, forCopy]);
     });
   }
   useEffect(() => {
     console.log('라우팅 통과한 auth.currentUser 값');
     console.log(auth.currentUser);
-    getNweets(); // nweets을 가져오는 코드 작성하기!!!!!!!!!!!!!!!!!!!!!!
+    getNweets();
   }, []);
   function onLogOutClick() {
     auth.signOut().then(() => {
