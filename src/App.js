@@ -16,6 +16,7 @@ import {
   getDocs,
   onSnapshot,
   query,
+  orderBy,
 } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
@@ -28,35 +29,48 @@ function Home(props) {
   const isLoggedIn = props.isLoggedIn; //user 정보 포함
   const [nweet, setNweet] = useState('');
   const [nweets, setNweets] = useState([]);
-  async function getNweets() {
-    const NweetsRef = collection(db, 'Nweets');
-    const querySnapshot = await getDocs(NweetsRef); //db에 보낸 요청query에 대한 응답을 스냅샷한 결과.
-    const anArray = [];
-    console.log('querySnapshot!!!!!!!!(아래)');
-    console.log(querySnapshot);
-    querySnapshot.forEach((doc) => {
-      console.log('doc.id : (아래)');
-      console.log(doc.id);
-      console.log('isLoggedIn : (아래)');
-      console.log(isLoggedIn);
-      const anObj = {
-        ...doc.data(),
-        nweetId: doc.id,
-      };
-      anArray.push(anObj);
-    });
-    setNweets(anArray);
-  }
+  // async function getNweets() {
+  //   const NweetsRef = collection(db, 'Nweets');
+  //   const q = query(NweetsRef, orderBy('createdAt', 'desc'));
+  //   const querySnapshot = await getDocs(q); //db에 보낸 요청query에 대한 응답을 스냅샷한 결과.
+  //   console.log('querySnapshot!!!!!!!!(아래)');
+  //   console.log(querySnapshot);
+  //   querySnapshot.forEach((doc) => {
+  //     console.log('doc.id : (아래)');
+  //     console.log(doc.id);
+  //     console.log('isLoggedIn : (아래)');
+  //     console.log(isLoggedIn);
+  //     const anObj = {
+  //       ...doc.data(),
+  //       nweetId: doc.id,
+  //     };
+  //     anArray.push(anObj);
+  //   });
+  //   setNweets(anArray);
+  //   아래에 getNweets 지우기
+  // }
   useEffect(() => {
     console.log('라우팅 통과한 auth.currentUser 값');
     console.log(auth.currentUser);
-    getNweets();
+    //getNweets(); 아직은 남겨두자.
     const NweetsRef = collection(db, 'Nweets'); //여기부터 onSnapshot 리스너 추가코드.
-    const q = query(NweetsRef);
-    onSnapshot(q, (snapShot) => {
-      //change이벤트리스너를 db에 추가하는 개념임.
+    const q = query(NweetsRef, orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+      //change이벤트리스너를 db에 추가하는 개념임 / 변화시 실핼할 콜백이 있음. 콜백이 받는 인자snapshot은 새로 변경된 콜렉션임.
+      const anArray = [];
       console.log('스냅샷 작동.');
-      console.log(snapShot.docs);
+      snapshot.forEach((doc) => {
+        console.log('doc.id : (아래)');
+        console.log(doc.id);
+        console.log('isLoggedIn : (아래)');
+        console.log(isLoggedIn);
+        const anObj = {
+          ...doc.data(),
+          nweetId: doc.id,
+        };
+        anArray.push(anObj);
+      });
+      setNweets(anArray);
     });
   }, []);
   function onLogOutClick() {
