@@ -14,13 +14,10 @@ import {
   collection,
   addDoc,
   getDocs,
-  orderBy,
+  onSnapshot,
+  query,
 } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
-
-function Profile() {
-  return <span>Profile</span>;
-}
 
 function Home(props) {
   const initializedApp = props.initializedApp;
@@ -32,11 +29,12 @@ function Home(props) {
   const [nweet, setNweet] = useState('');
   const [nweets, setNweets] = useState([]);
   async function getNweets() {
-    const dbNweets = await getDocs(collection(db, 'Nweets')); //firebase에서 데이터 받아오기.  현재 3개.
+    const NweetsRef = collection(db, 'Nweets');
+    const querySnapshot = await getDocs(NweetsRef); //db에 보낸 요청query에 대한 응답을 스냅샷한 결과.
     const anArray = [];
-    console.log('dbNweets!!!!!!!!(아래)');
-    console.log(dbNweets);
-    dbNweets.forEach((doc) => {
+    console.log('querySnapshot!!!!!!!!(아래)');
+    console.log(querySnapshot);
+    querySnapshot.forEach((doc) => {
       console.log('doc.id : (아래)');
       console.log(doc.id);
       console.log('isLoggedIn : (아래)');
@@ -53,6 +51,13 @@ function Home(props) {
     console.log('라우팅 통과한 auth.currentUser 값');
     console.log(auth.currentUser);
     getNweets();
+    const NweetsRef = collection(db, 'Nweets'); //여기부터 onSnapshot 리스너 추가코드.
+    const q = query(NweetsRef);
+    onSnapshot(q, (snapShot) => {
+      //change이벤트리스너를 db에 추가하는 개념임.
+      console.log('스냅샷 작동.');
+      console.log(snapShot.docs);
+    });
   }, []);
   function onLogOutClick() {
     auth.signOut().then(() => {
