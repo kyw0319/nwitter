@@ -9,7 +9,13 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from 'firebase/auth';
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  orderBy,
+} from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
 function Profile() {
@@ -22,6 +28,7 @@ function Home(props) {
   //로그아웃 부분 시작
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
+  const isLoggedIn = props.isLoggedIn; //user 정보 포함
   const [nweet, setNweet] = useState('');
   const [nweets, setNweets] = useState([]);
   async function getNweets() {
@@ -32,9 +39,11 @@ function Home(props) {
     dbNweets.forEach((doc) => {
       console.log('doc.id : (아래)');
       console.log(doc.id);
+      console.log('isLoggedIn : (아래)');
+      console.log(isLoggedIn);
       const anObj = {
         ...doc.data(),
-        id: doc.id,
+        nweetId: doc.id,
       };
       anArray.push(anObj);
     });
@@ -56,13 +65,17 @@ function Home(props) {
     event.preventDefault(); // 트윗 서밋!!!!!!!!!!!!!!!!!!!!!!!
     try {
       const docRef = await addDoc(collection(db, 'Nweets'), {
-        nweet: nweet,
+        creatorId: isLoggedIn.uid,
+        creatorDisplayName: isLoggedIn.displayName,
+        text: nweet,
         createdAt: Date.now(),
       });
+      console.log('docRef : (아래)');
+      console.log(docRef);
     } catch (error) {
       console.error('Error adding document: ', error); //에러 핸들링!
     }
-    setNweet('');
+    setNweet(''); // 이거를 어디에 놔야 입력텍스트가 스토어에 저장된 후에 렌더링이 될까>??????????????????????????????????????????????
   }
   function onChange(event) {
     setNweet(event.target.value);
@@ -84,8 +97,9 @@ function Home(props) {
       </form>
       <div>
         {nweets.map((nweet) => (
-          <div key={nweet.id}>
-            <h4 key={nweet.id}>{nweet.nweet}</h4>
+          <div key={nweet.nweetId}>
+            <h3>{nweet.creatorDisplayName}</h3>
+            <h4>{nweet.text}</h4>
           </div>
         ))}
       </div>
@@ -169,6 +183,7 @@ function Routing(props) {
               <Home
                 initializedApp={initializedApp}
                 auth={auth}
+                isLoggedIn={isLoggedIn}
                 setIsLoggedIn={setIsLoggedIn}
               />
             }
