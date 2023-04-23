@@ -20,6 +20,23 @@ import {
 } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
+function NweetBlock(props) {
+  const isOwner = props.isOwner;
+  const nweet = props.nweet;
+  return (
+    <div key={nweet.nweetId}>
+      <h3>{nweet.creatorDisplayName}</h3>
+      <h4>{nweet.text}</h4>
+      {isOwner && (
+        <>
+          <button>Delete</button>
+          <button>Edit</button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Home(props) {
   const initializedApp = props.initializedApp;
   const db = getFirestore(initializedApp);
@@ -94,7 +111,7 @@ function Home(props) {
     } catch (error) {
       console.error('Error adding document: ', error); //에러 핸들링!
     }
-    setNweet(''); // 이거를 어디에 놔야 입력텍스트가 스토어에 저장된 후에 렌더링이 될까>??????????????????????????????????????????????
+    setNweet('');
   }
   function onChange(event) {
     setNweet(event.target.value);
@@ -116,10 +133,11 @@ function Home(props) {
       </form>
       <div>
         {nweets.map((nweet) => (
-          <div key={nweet.nweetId}>
-            <h3>{nweet.creatorDisplayName}</h3>
-            <h4>{nweet.text}</h4>
-          </div>
+          <NweetBlock
+            key={nweet.id}
+            nweet={nweet}
+            isOwner={nweet.creatorId === isLoggedIn.uid}
+          />
         ))}
       </div>
     </>
