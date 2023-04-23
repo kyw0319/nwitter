@@ -25,15 +25,20 @@ function Home(props) {
   const [nweet, setNweet] = useState('');
   const [nweets, setNweets] = useState([]);
   async function getNweets() {
-    const dbNweets = await getDocs(collection(db, 'Nweets'));
-    console.log('dbNweets!!!!!!!!');
+    const dbNweets = await getDocs(collection(db, 'Nweets')); //firebase에서 데이터 받아오기.  현재 3개.
+    const anArray = [];
+    console.log('dbNweets!!!!!!!!(아래)');
+    console.log(dbNweets);
     dbNweets.forEach((doc) => {
-      const forCopy = {
+      console.log('doc.id : (아래)');
+      console.log(doc.id);
+      const anObj = {
         ...doc.data(),
-        id: document.id,
+        id: doc.id,
       };
-      setNweets((prev) => [...prev, forCopy]);
+      anArray.push(anObj);
     });
+    setNweets(anArray);
   }
   useEffect(() => {
     console.log('라우팅 통과한 auth.currentUser 값');
@@ -77,6 +82,13 @@ function Home(props) {
         />
         <input type="submit" value="Nweet" />
       </form>
+      <div>
+        {nweets.map((nweet) => (
+          <div key={nweet.id}>
+            <h4 key={nweet.id}>{nweet.nweet}</h4>
+          </div>
+        ))}
+      </div>
     </>
   );
 }
