@@ -19,6 +19,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  updateDoc,
 } from 'firebase/firestore'; // const firestore = getFirestore(); 로 firebase 얻고 시작.
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
@@ -28,21 +29,50 @@ function NweetBlock(props) {
   const isOwner = props.isOwner;
   const nweet = props.nweet;
   const docRef = doc(db, 'Nweets', nweet.nweetId); // doc의 id!!!!!!!!!!!!!!!
+  const [editing, setEditting] = useState(false);
+  const [newNweet, setNewNweet] = useState(nweet.text);
   async function onDeleteClick() {
     if (isOwner) {
       await deleteDoc(docRef);
     }
   }
+  function toggleEdit() {
+    setEditting((prev) => !prev);
+  }
+  function onChange(event) {
+    setNewNweet(event.target.value);
+  }
+  function onSubmit(event) {
+    event.preventDefault();
+    updateDoc(docRef, { text: newNweet });
+    toggleEdit();
+  }
   return (
     <div key={nweet.nweetId}>
       <h3>{nweet.creatorDisplayName}</h3>
-      <h4>{nweet.text}</h4>
-      {isOwner && (
+      {editing ? (
         <>
-          <button onClick={onDeleteClick}>Delete</button>
-          <button>Edit</button>
+          <form onSubmit={onSubmit}>
+            <input
+              value={newNweet}
+              onChange={onChange}
+              placeholder="Edit your nweet."
+              required
+            />
+            <input type="submit" value="Edit" />
+          </form>
+          <button onClick={toggleEdit}>Cancel</button>
         </>
+      ) : (
+        <h4>{nweet.text}</h4>
       )}
+      {isOwner &&
+        (editing || (
+          <>
+            <button onClick={onDeleteClick}>Delete</button>
+            <button onClick={toggleEdit}>Edit</button>
+          </>
+        ))}
     </div>
   );
 }
