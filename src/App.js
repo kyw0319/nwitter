@@ -45,7 +45,7 @@ function NweetBlock(props) {
   function onSubmit(event) {
     event.preventDefault();
     updateDoc(docRef, { text: newNweet });
-    toggleEdit();
+    setEditting(false);
   }
   return (
     <div key={nweet.nweetId}>
