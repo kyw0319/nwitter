@@ -12,8 +12,10 @@ import {
 import {
   getFirestore,
   collection,
+  doc,
   addDoc,
   getDocs,
+  deleteDoc,
   onSnapshot,
   query,
   orderBy,
@@ -21,15 +23,23 @@ import {
 import { Button } from 'react-bootstrap'; //css!!!!!!!!!!!!
 
 function NweetBlock(props) {
+  const initializedApp = props.initializedApp;
+  const db = getFirestore(initializedApp);
   const isOwner = props.isOwner;
   const nweet = props.nweet;
+  const docRef = doc(db, 'Nweets', nweet.nweetId); // doc의 id!!!!!!!!!!!!!!!
+  async function onDeleteClick() {
+    if (isOwner) {
+      await deleteDoc(docRef);
+    }
+  }
   return (
     <div key={nweet.nweetId}>
       <h3>{nweet.creatorDisplayName}</h3>
       <h4>{nweet.text}</h4>
       {isOwner && (
         <>
-          <button>Delete</button>
+          <button onClick={onDeleteClick}>Delete</button>
           <button>Edit</button>
         </>
       )}
@@ -67,9 +77,10 @@ function Home(props) {
   //   아래에 getNweets 지우기
   // }
   useEffect(() => {
+    // 새로고침 시 home 컴포넌트 로직
     console.log('라우팅 통과한 auth.currentUser 값');
     console.log(auth.currentUser);
-    //getNweets(); 아직은 남겨두자.
+    //getNweets(); 아직은 두기.
     const NweetsRef = collection(db, 'Nweets'); //여기부터 onSnapshot 리스너 추가코드.
     const q = query(NweetsRef, orderBy('createdAt', 'desc'));
     onSnapshot(q, (snapshot) => {
@@ -137,6 +148,7 @@ function Home(props) {
             key={nweet.id}
             nweet={nweet}
             isOwner={nweet.creatorId === isLoggedIn.uid}
+            initializedApp={initializedApp}
           />
         ))}
       </div>
