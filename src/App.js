@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import {
@@ -48,7 +48,7 @@ function NweetBlock(props) {
     setEditting(false);
   }
   return (
-    <div key={nweet.nweetId}>
+    <div>
       <h3>{nweet.creatorDisplayName}</h3>
       {editing ? (
         <>
@@ -86,42 +86,14 @@ function Home(props) {
   const isLoggedIn = props.isLoggedIn; //user 정보 포함
   const [nweet, setNweet] = useState('');
   const [nweets, setNweets] = useState([]);
-  // async function getNweets() {
-  //   const NweetsRef = collection(db, 'Nweets');
-  //   const q = query(NweetsRef, orderBy('createdAt', 'desc'));
-  //   const querySnapshot = await getDocs(q); //db에 보낸 요청query에 대한 응답을 스냅샷한 결과.
-  //   console.log('querySnapshot!!!!!!!!(아래)');
-  //   console.log(querySnapshot);
-  //   querySnapshot.forEach((doc) => {
-  //     console.log('doc.id : (아래)');
-  //     console.log(doc.id);
-  //     console.log('isLoggedIn : (아래)');
-  //     console.log(isLoggedIn);
-  //     const anObj = {
-  //       ...doc.data(),
-  //       nweetId: doc.id,
-  //     };
-  //     anArray.push(anObj);
-  //   });
-  //   setNweets(anArray);
-  //   아래에 getNweets 지우기
-  // }
   useEffect(() => {
     // 새로고침 시 home 컴포넌트 로직
-    console.log('라우팅 통과한 auth.currentUser 값');
-    console.log(auth.currentUser);
-    //getNweets(); 아직은 두기.
     const NweetsRef = collection(db, 'Nweets'); //여기부터 onSnapshot 리스너 추가코드.
     const q = query(NweetsRef, orderBy('createdAt', 'desc'));
     onSnapshot(q, (snapshot) => {
       //change이벤트리스너를 db에 추가하는 개념임 / 변화시 실핼할 콜백이 있음. 콜백이 받는 인자snapshot은 새로 변경된 콜렉션임.
       const anArray = [];
-      console.log('스냅샷 작동.');
       snapshot.forEach((doc) => {
-        console.log('doc.id : (아래)');
-        console.log(doc.id);
-        console.log('isLoggedIn : (아래)');
-        console.log(isLoggedIn);
         const anObj = {
           ...doc.data(),
           nweetId: doc.id,
@@ -135,7 +107,6 @@ function Home(props) {
     auth.signOut().then(() => {
       setIsLoggedIn(null);
     });
-    console.log('로그아웃.');
   }
   //로그아웃 부분 끝
   async function onSubmit(event) {
@@ -147,16 +118,14 @@ function Home(props) {
         text: nweet,
         createdAt: Date.now(),
       });
-      console.log('docRef : (아래)');
-      console.log(docRef);
     } catch (error) {
       console.error('Error adding document: ', error); //에러 핸들링!
     }
     setNweet('');
   }
   function onChange(event) {
+    console.log('트윗인풋 onChange()');
     setNweet(event.target.value);
-    console.log(nweet);
   }
   return (
     <>
@@ -173,14 +142,17 @@ function Home(props) {
         <input type="submit" value="Nweet" />
       </form>
       <div>
-        {nweets.map((nweet) => (
-          <NweetBlock
-            key={nweet.id}
-            nweet={nweet}
-            isOwner={nweet.creatorId === isLoggedIn.uid}
-            initializedApp={initializedApp}
-          />
-        ))}
+        {nweets.map((nweet) => {
+          console.log(`NweetsBlock의 key : ${nweet.nweetId}`);
+          return (
+            <NweetBlock
+              key={nweet.nweetId}
+              nweet={nweet}
+              isOwner={nweet.creatorId === isLoggedIn.uid}
+              initializedApp={initializedApp}
+            />
+          );
+        })}
       </div>
     </>
   );
@@ -199,23 +171,15 @@ function Auth(props) {
 
   function onGoogleClick() {
     // 인증상태 지속성 설정하고 바로 팝업으로 로그인 시작.
-    console.log('인증상태 지속성 설정하기 직전 auth.currentUser 값.');
-    console.log(auth.currentUser);
     setPersistence(auth, browserSessionPersistence)
       .then(() => {
         return signInWithPopup(auth, provider);
       })
       .then((result) => {
         //외부 제공업체로 로그인 시작.
-        console.log('----리다이렉트로 로그인하기 결과 받음----');
-        console.log(result);
         // getRedirectResult(auth) 로 얻은 result에 있는 필요한 속성들을 참조.
         const credential = GoogleAuthProvider.credentialFromResult(result); //신용증명을 credential에 참조.
-        console.log('----credential----');
-        console.log(credential);
         const token = credential.accessToken; //신용증명안에 있는 accessToken을 token변수에 참조시킴. 엑세스 토큰을 얻음.
-        console.log('----token----');
-        console.log(token);
         const user = result.user; //혹시모르니 유저 정보도 미리 참조시킴.
         //상태 변경해서 리렌더링 유도.
         setIsLoggedIn(auth.currentUser);
@@ -294,11 +258,6 @@ function App() {
       }
     });
   }, []);
-
-  console.log(
-    '새로고침하고 state를 auth.currentUser로 초기화 함. 초기화에 쓰인 auth.currentUser 값'
-  );
-  console.log(auth.currentUser);
 
   return (
     <Routing
