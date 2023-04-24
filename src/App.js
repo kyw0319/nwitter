@@ -2,9 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import {
+  getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  getAuth,
   onAuthStateChanged,
   setPersistence,
   browserSessionPersistence,
