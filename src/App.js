@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import {
@@ -30,7 +30,7 @@ function NweetBlock(props) {
   const nweet = props.nweet;
   const docRef = doc(db, 'Nweets', nweet.nweetId); // doc의 id!!!!!!!!!!!!!!!
   const [editing, setEditting] = useState(false);
-  const [newNweet, setNewNweet] = useState(nweet.text);
+  const newNweet = useRef(nweet.text);
   async function onDeleteClick() {
     if (isOwner) {
       await deleteDoc(docRef);
@@ -40,11 +40,12 @@ function NweetBlock(props) {
     setEditting((prev) => !prev);
   }
   function onChange(event) {
-    setNewNweet(event.target.value);
+    newNweet.current = event.target.value;
+    // 수정에 따른 리 리렌더링이 필요함.
   }
   function onSubmit(event) {
     event.preventDefault();
-    updateDoc(docRef, { text: newNweet });
+    updateDoc(docRef, { text: newNweet.current });
     setEditting(false);
   }
   return (
@@ -54,7 +55,7 @@ function NweetBlock(props) {
         <>
           <form onSubmit={onSubmit}>
             <input
-              value={newNweet}
+              value={newNweet.current}
               onChange={onChange}
               placeholder="Edit your nweet."
               required
