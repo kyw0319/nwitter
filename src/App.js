@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
@@ -30,7 +31,7 @@ function NweetBlock(props) {
   const nweet = props.nweet;
   const docRef = doc(db, 'Nweets', nweet.nweetId); // doc의 id!!!!!!!!!!!!!!!
   const [editing, setEditting] = useState(false);
-  const newNweet = useRef(nweet.text);
+  const { register, handleSubmit } = useForm();
   async function onDeleteClick() {
     if (isOwner) {
       await deleteDoc(docRef);
@@ -39,13 +40,8 @@ function NweetBlock(props) {
   function toggleEdit() {
     setEditting((prev) => !prev);
   }
-  function onChange(event) {
-    newNweet.current = event.target.value;
-    // 수정에 따른 리 리렌더링이 필요함.
-  }
-  function onSubmit(event) {
-    event.preventDefault();
-    updateDoc(docRef, { text: newNweet.current });
+  function handleInputData(data) {
+    updateDoc(docRef, { text: data.nweetEditInput });
     setEditting(false);
   }
   return (
@@ -53,10 +49,10 @@ function NweetBlock(props) {
       <h3>{nweet.creatorDisplayName}</h3>
       {editing ? (
         <>
-          <form onSubmit={onSubmit}>
+          <form onSubmit={handleSubmit(handleInputData)}>
             <input
-              value={newNweet.current}
-              onChange={onChange}
+              {...register('nweetEditInput')}
+              defaultValue={nweet.text}
               placeholder="Edit your nweet."
               required
             />
@@ -85,8 +81,8 @@ function Home(props) {
   const auth = props.auth;
   const setIsLoggedIn = props.setIsLoggedIn;
   const isLoggedIn = props.isLoggedIn; //user 정보 포함
-  const [nweet, setNweet] = useState('');
-  const [nweets, setNweets] = useState([]);
+  const { register, handleSubmit, reset } = useForm();
+  const [nweets, setNweets] = useState([]); //서버에서 트윗들 받아오는 배열state
   useEffect(() => {
     // 새로고침 시 home 컴포넌트 로직
     const NweetsRef = collection(db, 'Nweets'); //여기부터 onSnapshot 리스너 추가코드.
@@ -105,40 +101,34 @@ function Home(props) {
     });
   }, []);
   function onLogOutClick() {
+    //로그아웃부분
     auth.signOut().then(() => {
       setIsLoggedIn(null);
     });
   }
-  //로그아웃 부분 끝
-  async function onSubmit(event) {
-    event.preventDefault(); // 트윗 서밋!!!!!!!!!!!!!!!!!!!!!!!
+  async function handleInputData(data) {
+    const text = data.nweetInput;
+    reset();
     try {
       const docRef = await addDoc(collection(db, 'Nweets'), {
         creatorId: isLoggedIn.uid,
         creatorDisplayName: isLoggedIn.displayName,
-        text: nweet,
+        text: text,
         createdAt: Date.now(),
       });
     } catch (error) {
       console.error('Error adding document: ', error); //에러 핸들링!
     }
-    setNweet('');
-  }
-  function onChange(event) {
-    console.log('트윗인풋 onChange()');
-    setNweet(event.target.value);
   }
   return (
     <>
       <button onClick={onLogOutClick}>Log Out</button>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit(handleInputData)}>
         <input
-          name="tweet"
           type="text"
           placeholder="What's on your mind?"
-          value={nweet}
-          onChange={onChange}
           maxLength={120}
+          {...register('nweetInput')}
         />
         <input type="submit" value="Nweet" />
       </form>
