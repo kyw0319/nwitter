@@ -107,13 +107,13 @@ function Home(props) {
     });
   }
   async function handleInputData(data) {
-    //const text = data.nweetInput;
+    const text = data.nweetInput;
     reset();
     try {
       const docRef = await addDoc(collection(db, 'Nweets'), {
         creatorId: isLoggedIn.uid,
         creatorDisplayName: isLoggedIn.displayName,
-        text: data.nweetInput,
+        text: text,
         createdAt: Date.now(),
       });
     } catch (error) {
